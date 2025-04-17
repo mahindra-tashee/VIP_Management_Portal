@@ -1,5 +1,5 @@
 package com.example.userMgmt.controller;
-
+import org.springframework.web.bind.annotation.CrossOrigin;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +15,7 @@ import com.example.userMgmt.dto.LoginRequest;
 import com.example.userMgmt.entity.User;
 import com.example.userMgmt.service.UserService;
 
-
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/usermgmt")
 public class UserController {

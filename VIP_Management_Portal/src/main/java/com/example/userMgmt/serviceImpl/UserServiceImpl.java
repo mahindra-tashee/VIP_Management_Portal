@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.example.userMgmt.dto.ResponseDto;
+import com.example.userMgmt.dto.UserResponse;
 import com.example.userMgmt.entity.Role;
 import com.example.userMgmt.entity.User;
 import com.example.userMgmt.repository.RoleRepository;
@@ -72,8 +73,17 @@ public class UserServiceImpl implements UserService {
 		ResponseDto response = new ResponseDto();
 		try {
 			User loginUser = userRepository.findByUserName(username);
+		
 			if (loginUser.getUserPassword().equals(password)) {
-				return new ResponseEntity<>(loginUser, HttpStatus.OK);
+				
+				UserResponse userResponse=new UserResponse();
+				
+				userResponse.setUserId(loginUser.getUserId());
+				userResponse.setUserName(loginUser.getUserName());
+				userResponse.setRoles(loginUser.getRoles());
+				userResponse.setCreatedAt(loginUser.getCreatedAt());
+				
+				return new ResponseEntity<>(userResponse, HttpStatus.OK);
 			} else {
 				response.setMessage("Password mismatch");
 				return new ResponseEntity<>(response, HttpStatus.NOT_ACCEPTABLE);
