@@ -82,6 +82,7 @@ public class UserServiceImpl implements UserService {
 				userResponse.setUserName(loginUser.getUserName());
 				userResponse.setRoles(loginUser.getRoles());
 				userResponse.setCreatedAt(loginUser.getCreatedAt());
+				userResponse.setName(loginUser.getName());
 				
 				return new ResponseEntity<>(userResponse, HttpStatus.OK);
 			} else {

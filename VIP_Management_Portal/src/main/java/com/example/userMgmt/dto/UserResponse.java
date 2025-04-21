@@ -9,6 +9,7 @@ import com.example.userMgmt.entity.Role;
 import lombok.Data;
 @Data
 public class UserResponse {
+	  private String name;
 	  private Long userId;
 	  private String userName;
 	  private LocalDateTime createdAt;
