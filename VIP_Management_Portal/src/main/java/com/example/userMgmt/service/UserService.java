@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 
 import com.example.userMgmt.entity.User;
+import com.example.userMgmt.entity.VipReferenceList;
 
 public interface UserService {
 
@@ -12,4 +13,5 @@ public interface UserService {
 	public ResponseEntity<Object> loginUser(String username,String password);
 	public List<User> getAllUser();
 	public ResponseEntity<Object> getUserById(Long userId);
+	public List<VipReferenceList> getVipReferenceList(Long userId);
 }

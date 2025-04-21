@@ -14,8 +14,10 @@ import com.example.userMgmt.dto.ResponseDto;
 import com.example.userMgmt.dto.UserResponse;
 import com.example.userMgmt.entity.Role;
 import com.example.userMgmt.entity.User;
+import com.example.userMgmt.entity.VipReferenceList;
 import com.example.userMgmt.repository.RoleRepository;
 import com.example.userMgmt.repository.UserRepository;
+import com.example.userMgmt.repository.VipReferenceListRepository;
 import com.example.userMgmt.service.UserService;
 
 import jakarta.transaction.Transactional;
@@ -23,6 +25,9 @@ import jakarta.transaction.Transactional;
 @Service
 public class UserServiceImpl implements UserService {
 
+	@Autowired
+	private VipReferenceListRepository vipReferenceListRepository;
+	
 	@Autowired
 	private UserRepository userRepository;
 
@@ -119,4 +124,8 @@ public class UserServiceImpl implements UserService {
 		}
 	}
 
+	@Override
+	public List<VipReferenceList> getVipReferenceList(Long userId){
+		return vipReferenceListRepository.findAll();
+	}
 }

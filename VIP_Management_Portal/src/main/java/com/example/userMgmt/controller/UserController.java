@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.userMgmt.dto.LoginRequest;
 import com.example.userMgmt.entity.User;
+import com.example.userMgmt.entity.VipReferenceList;
 import com.example.userMgmt.service.UserService;
 
 @CrossOrigin(origins = "*")
@@ -42,5 +43,10 @@ public class UserController {
 	@GetMapping("/userById/{userId}")
 	public ResponseEntity<Object> getUserById(@PathVariable("userId") Long userId){
 		return userService.getUserById(userId);
+	}
+	
+	@GetMapping("/get-vip-reference-list/{userId}")
+	public List<VipReferenceList> getVipReferenceList(@PathVariable("userId") Long userId){
+		return userService.getVipReferenceList(userId);
 	}
 }
