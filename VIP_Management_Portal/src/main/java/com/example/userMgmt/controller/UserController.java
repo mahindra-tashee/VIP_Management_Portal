@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.userMgmt.dto.DashboardStatsResponse;
 import com.example.userMgmt.dto.LoginRequest;
 import com.example.userMgmt.entity.User;
 import com.example.userMgmt.entity.VipReferenceList;
@@ -48,5 +49,11 @@ public class UserController {
 	@GetMapping("/get-vip-reference-list/{userId}")
 	public List<VipReferenceList> getVipReferenceList(@PathVariable("userId") Long userId){
 		return userService.getVipReferenceList(userId);
+	}
+	
+	@PostMapping("/get-dashboard-stats")
+	public DashboardStatsResponse getDashboardData(@RequestBody User user) {
+		return userService.getDashboardStats(user.getUserId(), "1");
+		
 	}
 }

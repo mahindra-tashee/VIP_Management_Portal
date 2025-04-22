@@ -10,13 +10,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import com.example.userMgmt.dto.ChartData;
+import com.example.userMgmt.dto.DashboardStatsResponse;
 import com.example.userMgmt.dto.ResponseDto;
 import com.example.userMgmt.dto.UserResponse;
 import com.example.userMgmt.entity.Role;
 import com.example.userMgmt.entity.User;
 import com.example.userMgmt.entity.VipReferenceList;
+import com.example.userMgmt.enums.ReferenceStatus;
 import com.example.userMgmt.repository.RoleRepository;
 import com.example.userMgmt.repository.UserRepository;
+import com.example.userMgmt.repository.VipReferenceAssignmentRepository;
 import com.example.userMgmt.repository.VipReferenceListRepository;
 import com.example.userMgmt.service.UserService;
 
@@ -26,8 +30,11 @@ import jakarta.transaction.Transactional;
 public class UserServiceImpl implements UserService {
 
 	@Autowired
-	private VipReferenceListRepository vipReferenceListRepository;
+	private VipReferenceAssignmentRepository assignmentRepo;
 	
+	@Autowired
+	private VipReferenceListRepository vipReferenceListRepository;
+
 	@Autowired
 	private UserRepository userRepository;
 
@@ -37,58 +44,56 @@ public class UserServiceImpl implements UserService {
 	@Override
 	@Transactional(rollbackOn = Exception.class)
 	public ResponseEntity<Object> registerVipUser(User user) {
-	    try {
-	        Set<Role> fetchedRoles = new HashSet<>();
+		try {
+			Set<Role> fetchedRoles = new HashSet<>();
 
-	        // ✅ Replace transient roles with managed ones from DB
-	        if (user.getRoles() != null && !user.getRoles().isEmpty()) {
-	            for (Role role : user.getRoles()) {
-	                Role dbRole = roleRepository.findById(role.getRoleId())
-	                        .orElseThrow(() -> new RuntimeException("Role not found with ID: " + role.getRoleId()));
-	                fetchedRoles.add(dbRole);
-	            }
-	        } else {
-	            throw new IllegalArgumentException("At least one role must be assigned.");
-	        }
+			// ✅ Replace transient roles with managed ones from DB
+			if (user.getRoles() != null && !user.getRoles().isEmpty()) {
+				for (Role role : user.getRoles()) {
+					Role dbRole = roleRepository.findById(role.getRoleId())
+							.orElseThrow(() -> new RuntimeException("Role not found with ID: " + role.getRoleId()));
+					fetchedRoles.add(dbRole);
+				}
+			} else {
+				throw new IllegalArgumentException("At least one role must be assigned.");
+			}
 
-	        user.setRoles(fetchedRoles);
+			user.setRoles(fetchedRoles);
 
-	        // Set createdAt if missing
-	        if (user.getCreatedAt() == null) {
-	            user.setCreatedAt(LocalDateTime.now());
-	        }
+			// Set createdAt if missing
+			if (user.getCreatedAt() == null) {
+				user.setCreatedAt(LocalDateTime.now());
+			}
 
-	        // ✅ Save user — now with managed roles
-	        User savedUser = userRepository.save(user);
+			// ✅ Save user — now with managed roles
+			User savedUser = userRepository.save(user);
 
-	        return new ResponseEntity<>(savedUser, HttpStatus.OK);
+			return new ResponseEntity<>(savedUser, HttpStatus.OK);
 
-	    } catch (Exception ex) {
-	        ex.printStackTrace();
-	        ResponseDto response = new ResponseDto();
-	        response.setMessage("Failed to save user: " + ex.getMessage());
-	        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-	    }
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			ResponseDto response = new ResponseDto();
+			response.setMessage("Failed to save user: " + ex.getMessage());
+			return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+		}
 	}
-
-
 
 	@Override
 	public ResponseEntity<Object> loginUser(String username, String password) {
 		ResponseDto response = new ResponseDto();
 		try {
 			User loginUser = userRepository.findByUserName(username);
-		
+
 			if (loginUser.getUserPassword().equals(password)) {
-				
-				UserResponse userResponse=new UserResponse();
-				
+
+				UserResponse userResponse = new UserResponse();
+
 				userResponse.setUserId(loginUser.getUserId());
 				userResponse.setUserName(loginUser.getUserName());
 				userResponse.setRoles(loginUser.getRoles());
 				userResponse.setCreatedAt(loginUser.getCreatedAt());
 				userResponse.setName(loginUser.getName());
-				
+
 				return new ResponseEntity<>(userResponse, HttpStatus.OK);
 			} else {
 				response.setMessage("Password mismatch");
@@ -125,7 +130,24 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public List<VipReferenceList> getVipReferenceList(Long userId){
+	public List<VipReferenceList> getVipReferenceList(Long userId) {
 		return vipReferenceListRepository.findAll();
+	}
+
+	@Override
+	public DashboardStatsResponse getDashboardStats(Long userId,String roleName) {
+		int inboxCount = assignmentRepo.countByUser_UserIdAndStatus(userId, ReferenceStatus.INBOX);
+     	int sentCount = assignmentRepo.countByUser_UserIdAndStatus(userId, ReferenceStatus.SENT);
+
+		ChartData chartData = new ChartData();
+		chartData.setLabels(List.of("Inbox", "Sent"));
+    	chartData.setData(List.of(inboxCount, sentCount));
+
+		DashboardStatsResponse response = new DashboardStatsResponse();
+		response.setInboxCount(inboxCount);
+		response.setSentCount(sentCount);
+		response.setChartData(chartData);
+
+		return response;
 	}
 }
