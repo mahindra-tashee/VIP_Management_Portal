@@ -19,22 +19,30 @@ import lombok.Data;
 @Data
 @Table(name = "vip_reference_assignment", schema = "vip_usermgmt")
 public class VipReferenceAssignment {
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-	@ManyToOne
-	@JoinColumn(name = "user_id")
-	private User user; // The user (either initiator or assignee)
+    // The user who is receiving the reference (current owner)
+    @ManyToOne
+    @JoinColumn(name = "to_user_id")
+    private User toUser;
 
-	@ManyToOne
-	@JoinColumn(name = "vip_reference_id")
-	private VipReferenceList vipReference; // The reference linked to the user
+    // The user who assigned the reference (previous owner)
+    @ManyToOne
+    @JoinColumn(name = "from_user_id")
+    private User fromUser;
 
-	@ManyToOne
-	@JoinColumn(name = "role_id")
-	private Role role; // The role of the user (initiator or assignee)
+    @ManyToOne
+    @JoinColumn(name = "vip_reference_id")
+    private VipReferenceList vipReference;
 
-	@Enumerated(EnumType.STRING)
-	private ReferenceStatus status;
+    @ManyToOne
+    @JoinColumn(name = "role_id")
+    private Role role;  // The role of the current user (toUser)
+
+    @Enumerated(EnumType.STRING)
+    private ReferenceStatus status;
+
+    private LocalDateTime assignedAt;
 }

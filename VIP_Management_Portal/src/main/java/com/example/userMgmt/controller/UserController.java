@@ -13,8 +13,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.userMgmt.dto.DashboardStatsResponse;
 import com.example.userMgmt.dto.LoginRequest;
+import com.example.userMgmt.dto.ReferenceAssignRequest;
+import com.example.userMgmt.dto.VipReferenceListResponse;
 import com.example.userMgmt.entity.User;
 import com.example.userMgmt.entity.VipReferenceList;
+import com.example.userMgmt.enums.ReferenceStatus;
 import com.example.userMgmt.service.UserService;
 
 @CrossOrigin(origins = "*")
@@ -47,8 +50,13 @@ public class UserController {
 	}
 	
 	@GetMapping("/get-vip-reference-list/{userId}")
-	public List<VipReferenceList> getVipReferenceList(@PathVariable("userId") Long userId){
-		return userService.getVipReferenceList(userId);
+	public List<VipReferenceListResponse> getVipReferenceList(@PathVariable("userId") Long userId){
+		return userService.getReferencesOnUserId(userId);
+	}
+	
+	@GetMapping("/get-vip-reference-list/{userId}/{status}")
+	public List<VipReferenceListResponse> getReferenceListBasedOnStatus(@PathVariable("userId") Long userId,@PathVariable("status") ReferenceStatus status){
+		return userService.getReferencesOnUserIdAndStatus(userId, status);
 	}
 	
 	@PostMapping("/get-dashboard-stats")
@@ -56,4 +64,10 @@ public class UserController {
 		return userService.getDashboardStats(user.getUserId(), "1");
 		
 	}
+	
+	@PostMapping("/assign-reference")
+    public ResponseEntity<String> assignReference(@RequestBody ReferenceAssignRequest request) {
+        userService.assignReference(request);
+        return ResponseEntity.ok("Reference assigned successfully.");
+    }
 }
