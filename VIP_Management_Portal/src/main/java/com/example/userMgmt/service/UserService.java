@@ -19,6 +19,8 @@ public interface UserService {
 	public ResponseEntity<Object> getUserById(Long userId);
 	public List<VipReferenceListResponse> getReferencesOnUserId(Long userId);
 	public List<VipReferenceListResponse> getReferencesOnUserIdAndStatus(Long userId,ReferenceStatus status);
-	public DashboardStatsResponse getDashboardStats(Long userId,String roleName);
+	public DashboardStatsResponse getDashboardStats(Long userId);
 	public void assignReference(ReferenceAssignRequest reference);
+	public List<String> getQueuesByUserId(Long userId);
+	public List<VipReferenceListResponse> getReferencesByUserIdAndQueue(Long userId, String queueName);
 }

@@ -30,4 +30,6 @@ public interface VipReferenceAssignmentRepository extends JpaRepository<VipRefer
 
 	List<VipReferenceAssignment> findByToUser_UserIdAndStatus(Long userId, ReferenceStatus status);
 
+	List<VipReferenceAssignment> findByToUser_UserIdAndRole_RoleName(Long userId, String queueName);
+
 }

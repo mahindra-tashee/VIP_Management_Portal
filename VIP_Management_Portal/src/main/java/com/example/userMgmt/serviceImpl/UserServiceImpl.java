@@ -135,6 +135,9 @@ public class UserServiceImpl implements UserService {
 	// VIP Reference Management
 	@Override
 	public List<VipReferenceListResponse> getReferencesOnUserId(Long userId) {
+		User isUser=userRepository.findById(userId)
+				.orElseThrow(() -> new RuntimeException("User not found"));
+		
 		List<VipReferenceAssignment> assignments = assignmentRepo.findByToUser_UserId(userId);
 		List<VipReferenceListResponse> responseList = assignments.stream().map((VipReferenceAssignment assignment) -> {
 			VipReferenceList ref = assignment.getVipReference();
@@ -172,7 +175,10 @@ public class UserServiceImpl implements UserService {
 	}
 	
 	@Override
-	public DashboardStatsResponse getDashboardStats(Long userId, String roleName) {
+	public DashboardStatsResponse getDashboardStats(Long userId) {
+		User isUser=userRepository.findById(userId)
+		.orElseThrow(() -> new RuntimeException("User not found"));
+		
 		int inboxCount = assignmentRepo.countByToUser_UserIdAndStatus(userId, ReferenceStatus.INBOX);
 		int sentCount = assignmentRepo.countByToUser_UserIdAndStatus(userId, ReferenceStatus.SENT);
 
@@ -238,5 +244,37 @@ public class UserServiceImpl implements UserService {
 			assignmentRepo.save(sentRecord);
 		}
 	}
+	
+	
+	// VIP QUEUE List 
+	@Override
+	public List<String> getQueuesByUserId(Long userId) {
+	    User user = userRepository.findById(userId)
+	        .orElseThrow(() -> new RuntimeException("User not found"));
 
+	    return user.getRoles().stream()
+	               .map(Role::getRoleName).collect(Collectors.toList());
+	}
+	
+
+	@Override
+	public List<VipReferenceListResponse> getReferencesByUserIdAndQueue(Long userId, String queueName) {
+	    List<VipReferenceAssignment> assignments = assignmentRepo
+	        .findByToUser_UserIdAndRole_RoleName(userId, queueName);
+
+	    return assignments.stream()
+	        .map(assignment -> {
+	            VipReferenceList ref = assignment.getVipReference();
+	            VipReferenceListResponse response = new VipReferenceListResponse();
+	            response.setReferenceId(ref.getReferenceId());
+	            response.setReferenceNo(ref.getReferenceNo());
+	            response.setSubject(ref.getSubject());
+	            response.setPrirority(ref.getPrirority());
+	            response.setReceivedDate(ref.getReceivedDate());
+	            response.setStatus(assignment.getStatus().name());
+	            response.setCurrentQueue(ref.getCurrentQueue());
+	            return response;
+	        })
+	        .collect(Collectors.toList());
+	}
 }

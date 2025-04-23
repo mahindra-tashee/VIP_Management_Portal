@@ -1,6 +1,9 @@
 package com.example.userMgmt.controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.userMgmt.dto.DashboardStatsResponse;
 import com.example.userMgmt.dto.LoginRequest;
 import com.example.userMgmt.dto.ReferenceAssignRequest;
+import com.example.userMgmt.dto.ReferenceFilterByQueue;
 import com.example.userMgmt.dto.VipReferenceListResponse;
 import com.example.userMgmt.entity.User;
 import com.example.userMgmt.entity.VipReferenceList;
@@ -59,9 +63,9 @@ public class UserController {
 		return userService.getReferencesOnUserIdAndStatus(userId, status);
 	}
 	
-	@PostMapping("/get-dashboard-stats")
-	public DashboardStatsResponse getDashboardData(@RequestBody User user) {
-		return userService.getDashboardStats(user.getUserId(), "1");
+	@GetMapping("/get-dashboard-stats/{userId}")
+	public DashboardStatsResponse getDashboardData(@PathVariable("userId") Long userId) {
+		return userService.getDashboardStats(userId);
 		
 	}
 	
@@ -70,4 +74,22 @@ public class UserController {
         userService.assignReference(request);
         return ResponseEntity.ok("Reference assigned successfully.");
     }
+	
+	@GetMapping("/user/{userId}/queues")
+	public ResponseEntity<Map<String, Object>> getUserQueues(@PathVariable("userId") Long userId) {
+		List<String> queues=userService.getQueuesByUserId(userId);
+		Map<String, Object> response = new HashMap<>();
+	    response.put("userId", userId);
+	    response.put("queues", queues);
+	    return ResponseEntity.ok(response);
+	}
+	
+	@PostMapping("/user/queue/references")
+	public ResponseEntity<List<VipReferenceListResponse>> getFilteredReferences(@RequestBody ReferenceFilterByQueue request) {
+	    List<VipReferenceListResponse> responseList = userService.getReferencesByUserIdAndQueue(
+	            request.getUserId(),
+	            request.getQueue()
+	    );
+	    return ResponseEntity.ok(responseList);
+	}
 }
