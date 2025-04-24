@@ -71,8 +71,8 @@ public class UserController {
 	
 	@PostMapping("/assign-reference")
     public ResponseEntity<String> assignReference(@RequestBody ReferenceAssignRequest request) {
-        userService.assignReference(request);
-        return ResponseEntity.ok("Reference assigned successfully.");
+        return userService.assignReference(request);
+//        return ResponseEntity.ok("Reference assigned successfully.");
     }
 	
 	@GetMapping("/user/{userId}/queues")

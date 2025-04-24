@@ -22,4 +22,17 @@ public class VipReferenceList {
 	private LocalDateTime receivedDate;
 	private String prirority;
 	private String currentQueue;
+	
+    private LocalDateTime dateOfLetter;
+    private LocalDateTime dateOfEntry;
+    
+    private String nameOfDignitary;
+    private String emailId;
+    private String designation;
+
+    private String state;
+    private String constituency;
+    
+    private String categoryOfSubject;
+    private String subCategoryOfSubject;
 }

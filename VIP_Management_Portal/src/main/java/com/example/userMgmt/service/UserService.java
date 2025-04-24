@@ -20,7 +20,7 @@ public interface UserService {
 	public List<VipReferenceListResponse> getReferencesOnUserId(Long userId);
 	public List<VipReferenceListResponse> getReferencesOnUserIdAndStatus(Long userId,ReferenceStatus status);
 	public DashboardStatsResponse getDashboardStats(Long userId);
-	public void assignReference(ReferenceAssignRequest reference);
+	public ResponseEntity<String> assignReference(ReferenceAssignRequest reference);
 	public List<String> getQueuesByUserId(Long userId);
 	public List<VipReferenceListResponse> getReferencesByUserIdAndQueue(Long userId, String queueName);
 }

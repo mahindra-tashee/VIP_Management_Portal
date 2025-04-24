@@ -196,53 +196,62 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	@Transactional
-	public void assignReference(ReferenceAssignRequest request) {
-		User fromUser = userRepository.findById(request.getFromUserId())
-				.orElseThrow(() -> new RuntimeException("User not found"));
-		User toUser = userRepository.findById(request.getToUserId())
-				.orElseThrow(() -> new RuntimeException("User not found"));
+	public ResponseEntity<String> assignReference(ReferenceAssignRequest request) {
+		
+		// Create VIP Reference from form
+		VipReferenceList vipReference = new VipReferenceList();
+		vipReference.setDateOfLetter(request.getDateOfLetter());
+		vipReference.setReceivedDate(request.getDateOfReceiving());
+		vipReference.setDateOfEntry(request.getDateOfEntry());
+		vipReference.setNameOfDignitary(request.getNameOfDignitary());
+		vipReference.setEmailId(request.getEmailId());
+		vipReference.setDesignation(request.getDesignation());
+		vipReference.setState(request.getState());
+		vipReference.setConstituency(request.getConstituency());
+		vipReference.setPrirority(request.getPrirority());
+		vipReference.setCategoryOfSubject(request.getCategoryOfSubject());
+		vipReference.setSubCategoryOfSubject(request.getSubCategoryOfSubject());
+		vipReference.setSubject(request.getSubject());
 
-		VipReferenceList vipReference = vipReferenceListRepository.findById(request.getVipReferenceId())
-				.orElseThrow(() -> new RuntimeException("VIP Reference not found"));
+		// Auto-generate reference number
+		String stateCode = request.getState(); // Ex: "KA"
+		Long count = vipReferenceListRepository.countByState(stateCode); // Custom query
+		String referenceNo = stateCode + String.format("%05d", count + 1);
+		vipReference.setReferenceNo(referenceNo);
+		
+		// Create assignment record for Assigner
+		User fromUser = userRepository.findById(request.getFromUserId()).orElseThrow(() -> new RuntimeException("User not found"));
+		User toUser = userRepository.findById(request.getToUserId()).orElseThrow(() -> new RuntimeException("User not found"));
+		Role fromRole = roleRepository.findByRoleId(request.getFromRoleId()).orElseThrow(() -> new RuntimeException("Role not found"));
+		Role toRole = roleRepository.findByRoleId(request.getToRoleId()).orElseThrow(() -> new RuntimeException("Role not found"));
 
-		Role fromRole = roleRepository.findByRoleId(request.getFromRoleId())
-				.orElseThrow(() -> new RuntimeException("Role not found"));
-		Role toRole = roleRepository.findByRoleId(request.getToRoleId())
-				.orElseThrow(() -> new RuntimeException("Role not found"));
+		// Set current queue as "VIP_Assigner" because that's the next after initiator
+		vipReference.setCurrentQueue(toRole.getRoleName());
 
-		// ✅ Create the new assignment for the toUser
-		VipReferenceAssignment newAssignment = new VipReferenceAssignment();
-		newAssignment.setFromUser(fromUser);
-		newAssignment.setToUser(toUser);
-		newAssignment.setVipReference(vipReference);
-		newAssignment.setRole(toRole);
-		newAssignment.setStatus(ReferenceStatus.INBOX);
-		newAssignment.setAssignedAt(LocalDateTime.now());
-		assignmentRepo.save(newAssignment);
+		// Save VIP reference
+		vipReference = vipReferenceListRepository.save(vipReference);
 
-		// ✅ Update the reference's currentQueue field to reflect the new role
-		vipReference.setCurrentQueue(toRole.getRoleName()); // assuming role name like "VIP_Assignee"
-		vipReferenceListRepository.save(vipReference);
 
-		// ✅ Update the sender's reference status to SENT
-		Optional<VipReferenceAssignment> senderAssignment = assignmentRepo
-				.findByToUserAndVipReferenceAndStatus(fromUser, vipReference, ReferenceStatus.INBOX);
 
-		if (senderAssignment.isPresent()) {
-			VipReferenceAssignment assignment = senderAssignment.get();
-			assignment.setStatus(ReferenceStatus.SENT);
-			assignment.setAssignedAt(LocalDateTime.now());
-			assignmentRepo.save(assignment);
-		} else {
-			VipReferenceAssignment sentRecord = new VipReferenceAssignment();
-			sentRecord.setFromUser(fromUser);
-			sentRecord.setToUser(fromUser); // fromUser is both sender & previous owner
-			sentRecord.setVipReference(vipReference);
-			sentRecord.setRole(fromRole);
-			sentRecord.setStatus(ReferenceStatus.SENT);
-			sentRecord.setAssignedAt(LocalDateTime.now());
-			assignmentRepo.save(sentRecord);
-		}
+		VipReferenceAssignment assignment = new VipReferenceAssignment();
+		assignment.setFromUser(fromUser);
+		assignment.setToUser(toUser);
+		assignment.setVipReference(vipReference);
+		assignment.setRole(toRole);
+		assignment.setStatus(ReferenceStatus.INBOX);
+		assignment.setAssignedAt(LocalDateTime.now());
+		assignmentRepo.save(assignment);
+
+		// Also record SENT entry for initiator (fromUser)
+		VipReferenceAssignment sentRecord = new VipReferenceAssignment();
+		sentRecord.setFromUser(fromUser);
+		sentRecord.setToUser(fromUser); // since this is the sender
+		sentRecord.setVipReference(vipReference);
+		sentRecord.setRole(fromRole);
+		sentRecord.setStatus(ReferenceStatus.SENT);
+		sentRecord.setAssignedAt(LocalDateTime.now());
+		assignmentRepo.save(sentRecord);
+		return ResponseEntity.ok("Reference assigned successfully.");
 	}
 	
 	

@@ -8,5 +8,7 @@ import com.example.userMgmt.enums.ReferenceStatus;
 
 @Repository
 public interface VipReferenceListRepository extends JpaRepository<VipReferenceList,Long>{
+
+	Long countByState(String stateCode);
 	
 }
