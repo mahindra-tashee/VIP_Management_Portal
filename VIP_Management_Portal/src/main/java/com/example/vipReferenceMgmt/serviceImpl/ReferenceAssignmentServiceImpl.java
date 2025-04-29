@@ -1,5 +1,9 @@
 package com.example.vipReferenceMgmt.serviceImpl;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -7,19 +11,25 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.example.vipReferenceMgmt.dto.ChartData;
 import com.example.vipReferenceMgmt.dto.DashboardStatsResponse;
 import com.example.vipReferenceMgmt.dto.ReferenceAssignRequest;
+import com.example.vipReferenceMgmt.dto.VipReferenceDetailsResponse;
+import com.example.vipReferenceMgmt.dto.VipReferenceDocumentResponse;
 import com.example.vipReferenceMgmt.dto.VipReferenceListResponse;
 import com.example.vipReferenceMgmt.entity.Role;
 import com.example.vipReferenceMgmt.entity.User;
 import com.example.vipReferenceMgmt.entity.VipReferenceAssignment;
+import com.example.vipReferenceMgmt.entity.VipReferenceDocument;
 import com.example.vipReferenceMgmt.entity.VipReferenceList;
 import com.example.vipReferenceMgmt.enums.ReferenceStatus;
 import com.example.vipReferenceMgmt.repository.RoleRepository;
 import com.example.vipReferenceMgmt.repository.UserRepository;
 import com.example.vipReferenceMgmt.repository.VipReferenceAssignmentRepository;
+import com.example.vipReferenceMgmt.repository.VipReferenceDocumentRepository;
 import com.example.vipReferenceMgmt.repository.VipReferenceListRepository;
 import com.example.vipReferenceMgmt.service.ReferenceAssignmentService;
 
@@ -38,6 +48,9 @@ public class ReferenceAssignmentServiceImpl implements ReferenceAssignmentServic
 
 	@Autowired
 	private RoleRepository roleRepository;
+	
+	@Autowired
+	private VipReferenceDocumentRepository vipReferenceDocumentRepository;
 	
 	@Override
 	public List<VipReferenceListResponse> getReferencesOnUserId(Long userId) {
@@ -102,7 +115,7 @@ public class ReferenceAssignmentServiceImpl implements ReferenceAssignmentServic
 
 	@Override
 	@Transactional
-	public ResponseEntity<String> assignReference(ReferenceAssignRequest request) {
+	public ResponseEntity<String> assignReference(@ModelAttribute ReferenceAssignRequest request) { 
 		
 		// Create VIP Reference from form
 		VipReferenceList vipReference = new VipReferenceList();
@@ -157,6 +170,40 @@ public class ReferenceAssignmentServiceImpl implements ReferenceAssignmentServic
 		sentRecord.setStatus(ReferenceStatus.SENT);
 		sentRecord.setAssignedAt(LocalDateTime.now());
 		assignmentRepo.save(sentRecord);
+
+		String uploadDir = "C:/Users/NIC/Desktop/VIP_Management/VIP_Reference_Mgmt_Angular/VIP_Reference_Management/src/assets/pdf";
+		try {
+		    Files.createDirectories(Paths.get(uploadDir)); // Create folder if not exists
+
+		    for (int i = 0; i < request.getFiles().size(); i++) {
+		        MultipartFile file = request.getFiles().get(i);
+		        
+		        if (!file.getContentType().equals("application/pdf")) {
+		            throw new RuntimeException("Only PDF files are allowed.");
+		        }
+
+		        if (file.getSize() > 10 * 1024 * 1024) { // 10 MB = 10 * 1024 * 1024 bytes
+		            throw new RuntimeException("File " + file.getOriginalFilename() + " exceeds the maximum allowed size of 10 MB.");
+		        }
+		        String documentType = request.getDocumentTypes().get(i);
+		        String comment = request.getComments().get(i);
+
+		        String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+		        String filePath = uploadDir + fileName;
+		        Files.copy(file.getInputStream(), Paths.get(filePath), StandardCopyOption.REPLACE_EXISTING);
+
+		        VipReferenceDocument document = new VipReferenceDocument();
+		        document.setFileName(fileName);
+		        document.setFilePath(filePath);
+		        document.setDocumentType(documentType);
+		        document.setComments(comment);
+		        document.setVipReference(vipReference);
+		        vipReferenceDocumentRepository.save(document);
+		    }
+		} catch (IOException e) {
+		    throw new RuntimeException("Failed to save file: " + e.getMessage(), e);
+		}
+
 		return ResponseEntity.ok("Reference assigned successfully.");
 	}
 	
@@ -192,4 +239,43 @@ public class ReferenceAssignmentServiceImpl implements ReferenceAssignmentServic
 	        })
 	        .collect(Collectors.toList());
 	}
+	
+	
+	@Override
+	public VipReferenceDetailsResponse getReferenceDetailsById(String referenceNumber) {
+	    VipReferenceList ref = vipReferenceListRepository.findByReferenceNo(referenceNumber)
+	        .orElseThrow(() -> new RuntimeException("Reference not found"));
+
+	    VipReferenceDetailsResponse response = new VipReferenceDetailsResponse();
+	    response.setReferenceId(ref.getReferenceId());
+	    response.setReferenceNo(ref.getReferenceNo());
+	    response.setSubject(ref.getSubject());
+	    response.setReceivedDate(ref.getReceivedDate());
+	    response.setDateOfLetter(ref.getDateOfLetter());
+	    response.setDateOfEntry(ref.getDateOfEntry());
+	    response.setNameOfDignitary(ref.getNameOfDignitary());
+	    response.setEmailId(ref.getEmailId());
+	    response.setDesignation(ref.getDesignation());
+	    response.setState(ref.getState());
+	    response.setConstituency(ref.getConstituency());
+	    response.setPrirority(ref.getPrirority());
+	    response.setCategoryOfSubject(ref.getCategoryOfSubject());
+	    response.setSubCategoryOfSubject(ref.getSubCategoryOfSubject());
+	    response.setCurrentQueue(ref.getCurrentQueue());
+
+	 // Map documents if available
+	    List<VipReferenceDocumentResponse> documentResponses = ref.getDocuments().stream()
+	            .map(doc -> {
+	                VipReferenceDocumentResponse docRes = new VipReferenceDocumentResponse();
+	                
+	                docRes.setFileName(doc.getFileName());
+	                docRes.setFilePath(doc.getFilePath());
+	                docRes.setDocumentType(doc.getDocumentType());
+	                docRes.setComments(doc.getComments());
+	                return docRes;
+	            }).collect(Collectors.toList());
+	    response.setDocuments(documentResponses);
+	    return response;
+	}
+
 }

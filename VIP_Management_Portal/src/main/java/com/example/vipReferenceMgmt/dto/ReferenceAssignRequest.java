@@ -1,6 +1,9 @@
 package com.example.vipReferenceMgmt.dto;
 
 import java.time.LocalDateTime;
+import java.util.List;
+
+import org.springframework.web.multipart.MultipartFile;
 
 import lombok.Data;
 
@@ -23,4 +26,9 @@ public class ReferenceAssignRequest {
     private String categoryOfSubject;
     private String subCategoryOfSubject;
     private String subject;
+    private List<MultipartFile> files;
+
+    private List<String> documentTypes;
+
+    private List<String> comments;
 }

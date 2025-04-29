@@ -12,7 +12,7 @@ import com.example.vipReferenceMgmt.entity.VipReferenceList;
 import com.example.vipReferenceMgmt.enums.ReferenceStatus;
 
 public interface UserService {
-
+	
 	public ResponseEntity<Object> registerVipUser(User user);
 	public ResponseEntity<Object> loginUser(String username,String password);
 	public List<User> getAllUser();
