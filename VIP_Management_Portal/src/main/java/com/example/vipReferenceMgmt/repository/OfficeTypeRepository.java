@@ -12,6 +12,6 @@ import com.example.vipReferenceMgmt.entity.VipReferenceAssignment;
 public interface OfficeTypeRepository extends JpaRepository<OfficeType, Long>{
 	
    
-	List<OfficeType> findByOrganization_OrganizationId(Long getOfficeTypeByOrganizationId);
+	List<OfficeType> findByOrganization_OrganizationCode(String getOfficeTypeByOrganizationCode);
 
 }
