@@ -171,7 +171,7 @@ public class ReferenceAssignmentServiceImpl implements ReferenceAssignmentServic
 		sentRecord.setAssignedAt(LocalDateTime.now());
 		assignmentRepo.save(sentRecord);
 
-		String uploadDir = "C:/Users/mahin/BackUp-Online/OneDrive/Desktop/VIP_Reference_Management/VIP_Reference_Mgmt_Angular/VIP_Reference_Management/src/assets/pdf";
+		String uploadDir = "C:/Users/NIC/Desktop/VIP_Management/VIP_Reference_Mgmt_Angular/VIP_Reference_Management/src/assets/pdf";
 
 		try {
 		    Files.createDirectories(Paths.get(uploadDir)); // Create folder if not exists

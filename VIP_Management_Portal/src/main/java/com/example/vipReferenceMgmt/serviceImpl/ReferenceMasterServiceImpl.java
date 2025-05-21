@@ -14,12 +14,14 @@ import com.example.vipReferenceMgmt.entity.Organization;
 import com.example.vipReferenceMgmt.entity.State;
 import com.example.vipReferenceMgmt.entity.UserDesignation;
 import com.example.vipReferenceMgmt.entity.UserReport;
+import com.example.vipReferenceMgmt.entity.VipDesignation;
 import com.example.vipReferenceMgmt.entity.VipReferenceList;
 import com.example.vipReferenceMgmt.repository.OfficeTypeRepository;
 import com.example.vipReferenceMgmt.repository.OrganizationRepository;
 import com.example.vipReferenceMgmt.repository.StateRepository;
 import com.example.vipReferenceMgmt.repository.UserDesignationRepository;
 import com.example.vipReferenceMgmt.repository.UserReportRepository;
+import com.example.vipReferenceMgmt.repository.VipDesignationRepository;
 import com.example.vipReferenceMgmt.service.ReferenceMasterService;
 
 @Service
@@ -39,6 +41,9 @@ public class ReferenceMasterServiceImpl implements ReferenceMasterService {
 
 	@Autowired
 	private UserReportRepository userReportRepository;
+	
+	@Autowired
+	private VipDesignationRepository vipDesignationRepository;
 
 	@Override
 	public List<State> getAllState() {
@@ -77,6 +82,11 @@ public class ReferenceMasterServiceImpl implements ReferenceMasterService {
 			dto.setOffice(assignment.getOffice());
 			return dto;
 		}).collect(Collectors.toList());
+	}
+	
+	@Override
+	public List<VipDesignation> getVipDesignations(){
+		return vipDesignationRepository.findAllByOrderByDesignationCodeAsc();
 	}
 
 }

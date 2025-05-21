@@ -7,6 +7,7 @@ import com.example.vipReferenceMgmt.entity.OfficeType;
 import com.example.vipReferenceMgmt.entity.Organization;
 import com.example.vipReferenceMgmt.entity.State;
 import com.example.vipReferenceMgmt.entity.UserDesignation;
+import com.example.vipReferenceMgmt.entity.VipDesignation;
 
 public interface ReferenceMasterService {
 	public List<State> getAllState();
@@ -18,6 +19,8 @@ public interface ReferenceMasterService {
 	List<UserDesignation> getDesignationByOrganizationCode(String organizationCode);
 
 	List<UserListDto> getUserList(UserListDto userListDto);
+
+	List<VipDesignation> getVipDesignations();
 
 
 }

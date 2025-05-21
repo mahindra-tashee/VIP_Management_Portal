@@ -16,6 +16,7 @@ import com.example.vipReferenceMgmt.entity.OfficeType;
 import com.example.vipReferenceMgmt.entity.Organization;
 import com.example.vipReferenceMgmt.entity.State;
 import com.example.vipReferenceMgmt.entity.UserDesignation;
+import com.example.vipReferenceMgmt.entity.VipDesignation;
 import com.example.vipReferenceMgmt.service.ReferenceMasterService;
 
 @CrossOrigin(origins = "*")
@@ -36,6 +37,11 @@ public class ReferenceMasterController {
         return referenceMasterService.getAllOrganization();
     }
 	
+	@GetMapping("/vip-designations")
+    public List<VipDesignation> getVipDesignations() {
+        return referenceMasterService.getVipDesignations();
+    }
+	
 	@GetMapping("/get-office-types/{organizationCode}")
     public List<OfficeType> getOfficeTypeByOrganizationId(@PathVariable("organizationCode") String organizationCode) {
         return referenceMasterService.getOfficeTypeByOrganizationCode(organizationCode);
@@ -50,4 +56,6 @@ public class ReferenceMasterController {
 	public List<UserListDto> getUserList(@RequestBody UserListDto userListDto){
 		return referenceMasterService.getUserList(userListDto);
 	}
+	
+	
 }
