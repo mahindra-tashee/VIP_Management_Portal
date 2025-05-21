@@ -23,16 +23,14 @@ public class VipReferenceAssignment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    // The user who is receiving the reference (current owner)
+    
     @ManyToOne
-    @JoinColumn(name = "to_user_id")
-    private User toUser;
-
-    // The user who assigned the reference (previous owner)
+    @JoinColumn(name = "from_login_id", referencedColumnName = "loginId")
+    private UserReport fromLogin;
+    
     @ManyToOne
-    @JoinColumn(name = "from_user_id")
-    private User fromUser;
+    @JoinColumn(name = "to_login_id", referencedColumnName = "loginId")
+    private UserReport toLogin;
 
     @ManyToOne
     @JoinColumn(name = "vip_reference_id")

@@ -13,11 +13,12 @@ import com.example.vipReferenceMgmt.dto.VipReferenceListResponse;
 import com.example.vipReferenceMgmt.enums.ReferenceStatus;
 
 public interface ReferenceAssignmentService {
-	public List<VipReferenceListResponse> getReferencesOnUserId(Long userId);
-	public List<VipReferenceListResponse> getReferencesOnUserIdAndStatus(Long userId,ReferenceStatus status);
-	public DashboardStatsResponse getDashboardStats(Long userId);
+	List<VipReferenceListResponse> getReferencesOnLoginId(String loginId);
+	public List<VipReferenceListResponse> getReferencesOnLoginIdAndStatus(String loginId,ReferenceStatus status);
+	public DashboardStatsResponse getDashboardStats(String loginId);
 	public ResponseEntity<String> assignReference(@ModelAttribute ReferenceAssignRequest reference);
 	public List<String> getQueuesByUserId(Long userId);
-	public List<VipReferenceListResponse> getReferencesByUserIdAndQueue(Long userId, String queueName);
+	public List<VipReferenceListResponse> getReferencesByLoginIdAndQueue(String loginId, String queueName);
 	public VipReferenceDetailsResponse getReferenceDetailsById(String referenceNumber);
+	
 }

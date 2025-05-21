@@ -9,8 +9,8 @@ import lombok.Data;
 
 @Data
 public class ReferenceAssignRequest {
-    private Long fromUserId;
-    private Long toUserId;
+    private Long fromLoginId;
+    private Long toLoginId;
     private Long vipReferenceId;
     private Long fromRoleId;
     private Long toRoleId;

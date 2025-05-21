@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import com.example.vipReferenceMgmt.entity.Role;
 import com.example.vipReferenceMgmt.entity.User;
+import com.example.vipReferenceMgmt.entity.UserReport;
 import com.example.vipReferenceMgmt.entity.VipReferenceAssignment;
 import com.example.vipReferenceMgmt.entity.VipReferenceList;
 import com.example.vipReferenceMgmt.enums.ReferenceStatus;
@@ -17,19 +18,19 @@ import com.example.vipReferenceMgmt.enums.ReferenceStatus;
 @Repository
 public interface VipReferenceAssignmentRepository extends JpaRepository<VipReferenceAssignment, Long>{
 	  // Adjusted query for 'fromUser' instead of 'user'
-    int countByFromUser_UserIdAndStatus(Long userId, ReferenceStatus status);
+    int countByFromLogin_LoginIdAndStatus(String loginId, ReferenceStatus status);
 
     // Adjusted query for 'toUser' instead of 'user'
-    int countByToUser_UserIdAndStatus(Long userId, ReferenceStatus status);
+    int countByToLogin_LoginIdAndStatus(String loginId, ReferenceStatus status);
 
-    Optional<VipReferenceAssignment> findByToUserAndVipReferenceAndStatus(
-    	    User toUser, VipReferenceList vipReference, ReferenceStatus status
+    Optional<VipReferenceAssignment> findByToLoginAndVipReferenceAndStatus(
+    		UserReport toLogin, VipReferenceList vipReference, ReferenceStatus status
     	);
     
-    List<VipReferenceAssignment> findByToUser_UserId(Long userId);
+    List<VipReferenceAssignment> findByToLogin_LoginId(String loginId);
 
-	List<VipReferenceAssignment> findByToUser_UserIdAndStatus(Long userId, ReferenceStatus status);
+	List<VipReferenceAssignment> findByToLogin_LoginIdAndStatus(String loginId, ReferenceStatus status);
 
-	List<VipReferenceAssignment> findByToUser_UserIdAndRole_RoleName(Long userId, String queueName);
+	List<VipReferenceAssignment> findByToLogin_LoginIdAndRole_RoleName(String loginId, String queueName);
 
 }

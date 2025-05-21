@@ -22,11 +22,13 @@ import com.example.vipReferenceMgmt.dto.VipReferenceDocumentResponse;
 import com.example.vipReferenceMgmt.dto.VipReferenceListResponse;
 import com.example.vipReferenceMgmt.entity.Role;
 import com.example.vipReferenceMgmt.entity.User;
+import com.example.vipReferenceMgmt.entity.UserReport;
 import com.example.vipReferenceMgmt.entity.VipReferenceAssignment;
 import com.example.vipReferenceMgmt.entity.VipReferenceDocument;
 import com.example.vipReferenceMgmt.entity.VipReferenceList;
 import com.example.vipReferenceMgmt.enums.ReferenceStatus;
 import com.example.vipReferenceMgmt.repository.RoleRepository;
+import com.example.vipReferenceMgmt.repository.UserReportRepository;
 import com.example.vipReferenceMgmt.repository.UserRepository;
 import com.example.vipReferenceMgmt.repository.VipReferenceAssignmentRepository;
 import com.example.vipReferenceMgmt.repository.VipReferenceDocumentRepository;
@@ -52,65 +54,64 @@ public class ReferenceAssignmentServiceImpl implements ReferenceAssignmentServic
 	@Autowired
 	private VipReferenceDocumentRepository vipReferenceDocumentRepository;
 	
+	@Autowired
+	private UserReportRepository userReportRepository;
+	
 	@Override
-	public List<VipReferenceListResponse> getReferencesOnUserId(Long userId) {
-		User isUser=userRepository.findById(userId)
-				.orElseThrow(() -> new RuntimeException("User not found"));
+	public List<VipReferenceListResponse> getReferencesOnLoginId(String loginId) {
+		// here need to check login user are present or not
 		
-		List<VipReferenceAssignment> assignments = assignmentRepo.findByToUser_UserId(userId);
-		List<VipReferenceListResponse> responseList = assignments.stream().map((VipReferenceAssignment assignment) -> {
-			VipReferenceList ref = assignment.getVipReference();
-			VipReferenceListResponse response = new VipReferenceListResponse();
-			response.setReferenceId(ref.getReferenceId());
-			response.setReferenceNo(ref.getReferenceNo());
-			response.setSubject(ref.getSubject());
-			response.setPrirority(ref.getPrirority());
-			response.setReceivedDate(ref.getReceivedDate());
-			response.setStatus(assignment.getStatus().name());
-			response.setCurrentQueue(ref.getCurrentQueue());
+		List<VipReferenceAssignment> assignments = assignmentRepo.findByToLogin_LoginId(loginId);
 
-			return response;
-		}).collect(Collectors.toList());
-		return responseList;
+	    return assignments.stream().map(assignment -> {
+	        VipReferenceList ref = assignment.getVipReference();
+	        VipReferenceListResponse response = new VipReferenceListResponse();
+	        response.setReferenceId(ref.getReferenceId());
+	        response.setReferenceNo(ref.getReferenceNo());
+	        response.setSubject(ref.getSubject());
+	        response.setPrirority(ref.getPrirority());
+	        response.setReceivedDate(ref.getReceivedDate());
+	        response.setStatus(assignment.getStatus().name());
+	        response.setCurrentQueue(ref.getCurrentQueue());
+	        return response;
+	    }).collect(Collectors.toList());
 	}
 
 	@Override
-	public List<VipReferenceListResponse> getReferencesOnUserIdAndStatus(Long userId,ReferenceStatus status) {
-		List<VipReferenceAssignment> assignments = assignmentRepo.findByToUser_UserIdAndStatus(userId,status);
-		List<VipReferenceListResponse> responseList = assignments.stream().map((VipReferenceAssignment assignment) -> {
-			VipReferenceList ref = assignment.getVipReference();
-			VipReferenceListResponse response = new VipReferenceListResponse();
-			response.setReferenceId(ref.getReferenceId());
-			response.setReferenceNo(ref.getReferenceNo());
-			response.setSubject(ref.getSubject());
-			response.setPrirority(ref.getPrirority());
-			response.setReceivedDate(ref.getReceivedDate());
-			response.setStatus(assignment.getStatus().name());
-			response.setCurrentQueue(ref.getCurrentQueue());
+	public List<VipReferenceListResponse> getReferencesOnLoginIdAndStatus(String loginId,ReferenceStatus status) {
+		// here need to check login user are present or not
+		
+		List<VipReferenceAssignment> assignments = assignmentRepo.findByToLogin_LoginIdAndStatus(loginId, status);
 
-			return response;
-		}).collect(Collectors.toList());
-		return responseList;
+	    return assignments.stream().map(assignment -> {
+	        VipReferenceList ref = assignment.getVipReference();
+	        VipReferenceListResponse response = new VipReferenceListResponse();
+	        response.setReferenceId(ref.getReferenceId());
+	        response.setReferenceNo(ref.getReferenceNo());
+	        response.setSubject(ref.getSubject());
+	        response.setPrirority(ref.getPrirority());
+	        response.setReceivedDate(ref.getReceivedDate());
+	        response.setStatus(assignment.getStatus().name());
+	        response.setCurrentQueue(ref.getCurrentQueue());
+	        return response;
+	    }).collect(Collectors.toList());
 	}
 	
 	@Override
-	public DashboardStatsResponse getDashboardStats(Long userId) {
-		User isUser=userRepository.findById(userId)
-		.orElseThrow(() -> new RuntimeException("User not found"));
-		
-		int inboxCount = assignmentRepo.countByToUser_UserIdAndStatus(userId, ReferenceStatus.INBOX);
-		int sentCount = assignmentRepo.countByToUser_UserIdAndStatus(userId, ReferenceStatus.SENT);
+	public DashboardStatsResponse getDashboardStats(String loginId) {
+		 int inboxCount = assignmentRepo.countByToLogin_LoginIdAndStatus(loginId, ReferenceStatus.INBOX);
+		    int sentCount = assignmentRepo.countByToLogin_LoginIdAndStatus(loginId, ReferenceStatus.SENT);
 
-		ChartData chartData = new ChartData();
-		chartData.setLabels(List.of("Inbox", "Sent"));
-		chartData.setData(List.of(inboxCount, sentCount));
+		    ChartData chartData = new ChartData();
+		    chartData.setLabels(List.of("Inbox", "Sent"));
+		    chartData.setData(List.of(inboxCount, sentCount));
 
-		DashboardStatsResponse response = new DashboardStatsResponse();
-		response.setInboxCount(inboxCount);
-		response.setSentCount(sentCount);
-		response.setChartData(chartData);
+		    DashboardStatsResponse response = new DashboardStatsResponse();
+		    response.setInboxCount(inboxCount);
+		    response.setSentCount(sentCount);
+		    response.setChartData(chartData);
 
-		return response;
+		    return response;
 	}
 
 	@Override
@@ -139,8 +140,8 @@ public class ReferenceAssignmentServiceImpl implements ReferenceAssignmentServic
 		vipReference.setReferenceNo(referenceNo);
 		
 		// Create assignment record for Assigner
-		User fromUser = userRepository.findById(request.getFromUserId()).orElseThrow(() -> new RuntimeException("User not found"));
-		User toUser = userRepository.findById(request.getToUserId()).orElseThrow(() -> new RuntimeException("User not found"));
+		UserReport fromLogin = userReportRepository.findByLoginId(request.getFromLoginId()).orElseThrow(() -> new RuntimeException("From User not found with loginId"));
+	    UserReport toLogin = userReportRepository.findByLoginId(request.getToLoginId()).orElseThrow(() -> new RuntimeException("To User not found with loginId"));
 		Role fromRole = roleRepository.findByRoleId(request.getFromRoleId()).orElseThrow(() -> new RuntimeException("Role not found"));
 		Role toRole = roleRepository.findByRoleId(request.getToRoleId()).orElseThrow(() -> new RuntimeException("Role not found"));
 
@@ -153,8 +154,8 @@ public class ReferenceAssignmentServiceImpl implements ReferenceAssignmentServic
 
 
 		VipReferenceAssignment assignment = new VipReferenceAssignment();
-		assignment.setFromUser(fromUser);
-		assignment.setToUser(toUser);
+		assignment.setFromLogin(fromLogin);
+		assignment.setToLogin(toLogin);
 		assignment.setVipReference(vipReference);
 		assignment.setRole(toRole);
 		assignment.setStatus(ReferenceStatus.INBOX);
@@ -163,8 +164,8 @@ public class ReferenceAssignmentServiceImpl implements ReferenceAssignmentServic
 
 		// Also record SENT entry for initiator (fromUser)
 		VipReferenceAssignment sentRecord = new VipReferenceAssignment();
-		sentRecord.setFromUser(fromUser);
-		sentRecord.setToUser(fromUser); // since this is the sender
+		sentRecord.setFromLogin(fromLogin);
+		sentRecord.setToLogin(fromLogin); // since this is the sender
 		sentRecord.setVipReference(vipReference);
 		sentRecord.setRole(fromRole);
 		sentRecord.setStatus(ReferenceStatus.SENT);
@@ -221,9 +222,9 @@ public class ReferenceAssignmentServiceImpl implements ReferenceAssignmentServic
 	
 
 	@Override
-	public List<VipReferenceListResponse> getReferencesByUserIdAndQueue(Long userId, String queueName) {
+	public List<VipReferenceListResponse> getReferencesByLoginIdAndQueue(String loginId, String queueName) {
 	    List<VipReferenceAssignment> assignments = assignmentRepo
-	        .findByToUser_UserIdAndRole_RoleName(userId, queueName);
+	        .findByToLogin_LoginIdAndRole_RoleName(loginId, queueName);
 
 	    return assignments.stream()
 	        .map(assignment -> {

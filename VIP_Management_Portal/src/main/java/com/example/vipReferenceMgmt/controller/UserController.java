@@ -20,6 +20,7 @@ import com.example.vipReferenceMgmt.dto.ReferenceAssignRequest;
 import com.example.vipReferenceMgmt.dto.ReferenceFilterByQueue;
 import com.example.vipReferenceMgmt.dto.VipReferenceListResponse;
 import com.example.vipReferenceMgmt.entity.User;
+import com.example.vipReferenceMgmt.entity.UserReport;
 import com.example.vipReferenceMgmt.entity.VipReferenceList;
 import com.example.vipReferenceMgmt.enums.ReferenceStatus;
 import com.example.vipReferenceMgmt.service.UserService;
@@ -33,7 +34,7 @@ public class UserController {
 	UserService userService;
 
 	@PostMapping("/register-user")
-	public ResponseEntity<Object> registerVipUser(@RequestBody User user) {
+	public ResponseEntity<Object> registerVipUser(@RequestBody UserReport user) {
 		return userService.registerVipUser(user);
 	}
 	

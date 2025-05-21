@@ -33,8 +33,8 @@ public class ReferenceAssignmentController {
 	ReferenceAssignmentService referenceAssignmentService;
 
 	@GetMapping("/reference-list/{userId}")
-	public List<VipReferenceListResponse> getVipReferenceList(@PathVariable("userId") Long userId) {
-		return referenceAssignmentService.getReferencesOnUserId(userId);
+	public List<VipReferenceListResponse> getVipReferenceList(@PathVariable("userId") String loginId) {
+		return referenceAssignmentService.getReferencesOnLoginId(loginId);
 	}
 
 	@GetMapping("/reference-list/{userId}/{status}")
