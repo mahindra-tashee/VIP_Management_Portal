@@ -22,6 +22,8 @@ public interface UserReportRepository extends JpaRepository<UserReport, Long> {
 		    @Param("office") String office
 		);
 	
-	Optional<UserReport> findByLoginId(Long loginId);
+	Optional<UserReport> findByLoginId(String loginId);
+	
+	
 
 }

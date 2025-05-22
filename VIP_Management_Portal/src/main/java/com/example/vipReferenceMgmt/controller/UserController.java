@@ -19,7 +19,6 @@ import com.example.vipReferenceMgmt.dto.LoginRequest;
 import com.example.vipReferenceMgmt.dto.ReferenceAssignRequest;
 import com.example.vipReferenceMgmt.dto.ReferenceFilterByQueue;
 import com.example.vipReferenceMgmt.dto.VipReferenceListResponse;
-import com.example.vipReferenceMgmt.entity.User;
 import com.example.vipReferenceMgmt.entity.UserReport;
 import com.example.vipReferenceMgmt.entity.VipReferenceList;
 import com.example.vipReferenceMgmt.enums.ReferenceStatus;
@@ -45,13 +44,13 @@ public class UserController {
 	}
 	
 	@GetMapping("/get-users")
-	public List<User> getAllUser(){
+	public List<UserReport> getAllUser(){
 		return userService.getAllUser();
 	}
 	
-	@GetMapping("/userById/{userId}")
-	public ResponseEntity<Object> getUserById(@PathVariable("userId") Long userId){
-		return userService.getUserById(userId);
+	@GetMapping("/user/{loginId}")
+	public ResponseEntity<Object> getUserById(@PathVariable("loginId") String loginId){
+		return userService.getUserByLoginId(loginId);
 	}
 	
 	

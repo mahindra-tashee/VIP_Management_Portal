@@ -19,12 +19,12 @@ import com.example.vipReferenceMgmt.dto.ResponseDto;
 import com.example.vipReferenceMgmt.dto.UserResponse;
 import com.example.vipReferenceMgmt.dto.VipReferenceListResponse;
 import com.example.vipReferenceMgmt.entity.Role;
-import com.example.vipReferenceMgmt.entity.User;
+import com.example.vipReferenceMgmt.entity.UserReport;
 import com.example.vipReferenceMgmt.entity.VipReferenceAssignment;
 import com.example.vipReferenceMgmt.entity.VipReferenceList;
 import com.example.vipReferenceMgmt.enums.ReferenceStatus;
 import com.example.vipReferenceMgmt.repository.RoleRepository;
-import com.example.vipReferenceMgmt.repository.UserRepository;
+import com.example.vipReferenceMgmt.repository.UserReportRepository;
 import com.example.vipReferenceMgmt.repository.VipReferenceAssignmentRepository;
 import com.example.vipReferenceMgmt.repository.VipReferenceListRepository;
 import com.example.vipReferenceMgmt.service.UserService;
@@ -40,96 +40,107 @@ public class UserServiceImpl implements UserService {
 	@Autowired
 	private VipReferenceListRepository vipReferenceListRepository;
 
-	@Autowired
-	private UserRepository userRepository;
 
 	@Autowired
-	private RoleRepository roleRepository; // Make sure this is injected
-
+	private RoleRepository roleRepository; 
+	
+	@Autowired
+	private UserReportRepository userReportRepository;
+	
+	
 	// VIP Reference User Management
+	
 	@Override
 	@Transactional(rollbackOn = Exception.class)
-	public ResponseEntity<Object> registerVipUser(User user) {
-		try {
-			Set<Role> fetchedRoles = new HashSet<>();
+	public ResponseEntity<Object> registerVipUser(UserReport userReport) {
+	    try {
+	        Set<Role> fetchedRoles = new HashSet<>();
 
-			if (user.getRoles() != null && !user.getRoles().isEmpty()) {
-				for (Role role : user.getRoles()) {
-					Role dbRole = roleRepository.findById(role.getRoleId())
-							.orElseThrow(() -> new RuntimeException("Role not found with ID: " + role.getRoleId()));
-					fetchedRoles.add(dbRole);
-				}
-			} else {
-				throw new IllegalArgumentException("At least one role must be assigned.");
-			}
+	        if (userReport.getRoles() != null && !userReport.getRoles().isEmpty()) {
+	            for (Role role : userReport.getRoles()) {
+	                Role dbRole = roleRepository.findById(role.getRoleId())
+	                        .orElseThrow(() -> new RuntimeException("Role not found with ID: " + role.getRoleId()));
+	                fetchedRoles.add(dbRole);
+	            }
+	        } else {
+	            throw new IllegalArgumentException("At least one role must be assigned.");
+	        }
 
-			user.setRoles(fetchedRoles);
+	        userReport.setRoles(fetchedRoles);
 
-			if (user.getCreatedAt() == null) {
-				user.setCreatedAt(LocalDateTime.now());
-			}
+	        if (userReport.getCreatedDateTime() == null) {
+	            userReport.setCreatedDateTime(LocalDateTime.now());
+	        }
 
-			User savedUser = userRepository.save(user);
+	        UserReport savedUser = userReportRepository.save(userReport);
 
-			return new ResponseEntity<>(savedUser, HttpStatus.OK);
+	        return new ResponseEntity<>(savedUser, HttpStatus.OK);
 
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			ResponseDto response = new ResponseDto();
-			response.setMessage("Failed to save user: " + ex.getMessage());
-			return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-		}
+	    } catch (Exception ex) {
+	        ex.printStackTrace();
+	        ResponseDto response = new ResponseDto();
+	        response.setMessage("Failed to save user: " + ex.getMessage());
+	        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+	    }
 	}
 
 	@Override
 	public ResponseEntity<Object> loginUser(String username, String password) {
-		ResponseDto response = new ResponseDto();
-		try {
-			User loginUser = userRepository.findByUserName(username);
+	    ResponseDto response = new ResponseDto();
 
-			if (loginUser.getUserPassword().equals(password)) {
+	    try {
+	        UserReport loginUser = userReportRepository.findByLoginId(username).orElseThrow(() -> new RuntimeException("User not found with loginId: " + username));;
 
-				UserResponse userResponse = new UserResponse();
+	        if (loginUser == null) {
+	            response.setMessage("User not found with loginId: " + username);
+	            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+	        }
 
-				userResponse.setUserId(loginUser.getUserId());
-				userResponse.setUserName(loginUser.getUserName());
-				userResponse.setRoles(loginUser.getRoles());
-				userResponse.setCreatedAt(loginUser.getCreatedAt());
-				userResponse.setName(loginUser.getName());
+	        if (loginUser.getUserPassword() != null && loginUser.getUserPassword().equals(password)) {
 
-				return new ResponseEntity<>(userResponse, HttpStatus.OK);
-			} else {
-				response.setMessage("Password mismatch");
-				return new ResponseEntity<>(response, HttpStatus.NOT_ACCEPTABLE);
-			}
+	            UserResponse userResponse = new UserResponse();
+	            userResponse.setUserId(loginUser.getId());
+	            userResponse.setUserName(loginUser.getLoginId());
+	            userResponse.setRoles(loginUser.getRoles());
+	            userResponse.setCreatedAt(loginUser.getCreatedDateTime());
+	            userResponse.setName(loginUser.getName());
 
-		} catch (Exception ex) {
-			response.setMessage(ex.getMessage());
-			return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-		}
+	            return new ResponseEntity<>(userResponse, HttpStatus.OK);
+	        } else {
+	            response.setMessage("Password mismatch");
+	            return new ResponseEntity<>(response, HttpStatus.NOT_ACCEPTABLE);
+	        }
+
+	    } catch (Exception ex) {
+	        response.setMessage("Login failed: " + ex.getMessage());
+	        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+	    }
 	}
 
 	@Override
-	public List<User> getAllUser() {
+	public List<UserReport> getAllUser() {
 		// TODO Auto-generated method stub
-		return userRepository.findAll();
+		return userReportRepository.findAll();
 	}
 
 	@Override
-	public ResponseEntity<Object> getUserById(Long userId) {
-		// TODO Auto-generated method stub
-		ResponseDto response = new ResponseDto();
-		try {
-			User user2 = userRepository.findById(userId).orElse(null);
-			if (user2 == null) {
-				response.setMessage("User Not found!");
-				return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-			}
-			return new ResponseEntity<>(user2, HttpStatus.OK);
-		} catch (Exception ex) {
-			response.setMessage(ex.getMessage());
-			return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-		}
+	public ResponseEntity<Object> getUserByLoginId(String loginId) {
+	    ResponseDto response = new ResponseDto();
+
+	    try {
+	        UserReport user = userReportRepository.findByLoginId(loginId).orElse(null);
+
+	        if (user == null) {
+	            response.setMessage("User not found!");
+	            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+	        }
+
+	        return new ResponseEntity<>(user, HttpStatus.OK);
+
+	    } catch (Exception ex) {
+	        response.setMessage("Failed to retrieve user: " + ex.getMessage());
+	        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+	    }
 	}
 
 	// VIP Reference Management

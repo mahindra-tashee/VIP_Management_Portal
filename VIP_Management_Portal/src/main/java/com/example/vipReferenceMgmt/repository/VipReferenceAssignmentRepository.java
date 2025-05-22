@@ -9,7 +9,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.example.vipReferenceMgmt.entity.Role;
-import com.example.vipReferenceMgmt.entity.User;
 import com.example.vipReferenceMgmt.entity.UserReport;
 import com.example.vipReferenceMgmt.entity.VipReferenceAssignment;
 import com.example.vipReferenceMgmt.entity.VipReferenceList;

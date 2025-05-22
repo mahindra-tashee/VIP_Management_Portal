@@ -6,7 +6,10 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
+
+import javax.management.RuntimeErrorException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +24,6 @@ import com.example.vipReferenceMgmt.dto.VipReferenceDetailsResponse;
 import com.example.vipReferenceMgmt.dto.VipReferenceDocumentResponse;
 import com.example.vipReferenceMgmt.dto.VipReferenceListResponse;
 import com.example.vipReferenceMgmt.entity.Role;
-import com.example.vipReferenceMgmt.entity.User;
 import com.example.vipReferenceMgmt.entity.UserReport;
 import com.example.vipReferenceMgmt.entity.VipReferenceAssignment;
 import com.example.vipReferenceMgmt.entity.VipReferenceDocument;
@@ -29,7 +31,6 @@ import com.example.vipReferenceMgmt.entity.VipReferenceList;
 import com.example.vipReferenceMgmt.enums.ReferenceStatus;
 import com.example.vipReferenceMgmt.repository.RoleRepository;
 import com.example.vipReferenceMgmt.repository.UserReportRepository;
-import com.example.vipReferenceMgmt.repository.UserRepository;
 import com.example.vipReferenceMgmt.repository.VipReferenceAssignmentRepository;
 import com.example.vipReferenceMgmt.repository.VipReferenceDocumentRepository;
 import com.example.vipReferenceMgmt.repository.VipReferenceListRepository;
@@ -45,8 +46,6 @@ public class ReferenceAssignmentServiceImpl implements ReferenceAssignmentServic
 	@Autowired
 	private VipReferenceListRepository vipReferenceListRepository;
 
-	@Autowired
-	private UserRepository userRepository;
 
 	@Autowired
 	private RoleRepository roleRepository;
@@ -132,6 +131,8 @@ public class ReferenceAssignmentServiceImpl implements ReferenceAssignmentServic
 		vipReference.setCategoryOfSubject(request.getCategoryOfSubject());
 		vipReference.setSubCategoryOfSubject(request.getSubCategoryOfSubject());
 		vipReference.setSubject(request.getSubject());
+		vipReference.setCreatedBy(request.getCreatedBy());
+		vipReference.setCreatedAt(request.getCreatedAt());
 
 		// Auto-generate reference number
 		String stateCode = request.getState(); // Ex: "KA"
@@ -165,15 +166,16 @@ public class ReferenceAssignmentServiceImpl implements ReferenceAssignmentServic
 		// Also record SENT entry for initiator (fromUser)
 		VipReferenceAssignment sentRecord = new VipReferenceAssignment();
 		sentRecord.setFromLogin(fromLogin);
-		sentRecord.setToLogin(fromLogin); // since this is the sender
+		sentRecord.setToLogin(toLogin); // since this is the sender
 		sentRecord.setVipReference(vipReference);
 		sentRecord.setRole(fromRole);
 		sentRecord.setStatus(ReferenceStatus.SENT);
 		sentRecord.setAssignedAt(LocalDateTime.now());
 		assignmentRepo.save(sentRecord);
 
-		String uploadDir = "C:/Users/NIC/Desktop/VIP_Management/VIP_Reference_Mgmt_Angular/VIP_Reference_Management/src/assets/pdf";
+		String uploadDir = "C:/Users/mahin/BackUp-Online/OneDrive/Desktop/VIP_Reference_Management/VIP_Reference_Mgmt_Angular/VIP_Reference_Management/src/assets/pdf";
 
+		
 		try {
 		    Files.createDirectories(Paths.get(uploadDir)); // Create folder if not exists
 
@@ -209,16 +211,50 @@ public class ReferenceAssignmentServiceImpl implements ReferenceAssignmentServic
 		return ResponseEntity.ok("Reference assigned successfully.");
 	}
 	
+	@Override
+	@Transactional
+	public ResponseEntity<String> updateReference(ReferenceAssignRequest request){
+		
+		if (request.getUpdatedBy() == null || request.getUpdatedAt() == null) {
+	        return ResponseEntity.badRequest().body("updatedBy and updatedAt are required.");
+	    }
+		
+		VipReferenceList vipReference= vipReferenceListRepository.findById(request.getVipReferenceId()).orElse(null);
+		if (vipReference == null) {
+			throw new RuntimeException("Data Not found");
+		}else {
+			
+			if (request.getNameOfDignitary() != null) vipReference.setNameOfDignitary(request.getNameOfDignitary());
+		    if (request.getEmailId() != null) vipReference.setEmailId(request.getEmailId());
+		    if (request.getDesignation() != null) vipReference.setDesignation(request.getDesignation());
+		    if (request.getConstituency() != null) vipReference.setConstituency(request.getConstituency());
+		    if (request.getPrirority() != null) vipReference.setPrirority(request.getPrirority());
+		    if (request.getCategoryOfSubject() != null) vipReference.setCategoryOfSubject(request.getCategoryOfSubject());
+		    if (request.getSubCategoryOfSubject() != null) vipReference.setSubCategoryOfSubject(request.getSubCategoryOfSubject());
+		    if (request.getSubject() != null) vipReference.setSubject(request.getSubject());
+
+			vipReference.setUpdatedAt(request.getUpdatedAt());
+			vipReference.setUpdatedBy(request.getUpdatedBy());
+			
+			vipReferenceListRepository.save(vipReference);
+			return ResponseEntity.ok("Reference updated successfully.");
+		}
+		
+	}
 	
 	// VIP QUEUE List 
+	
 	@Override
-	public List<String> getQueuesByUserId(Long userId) {
-	    User user = userRepository.findById(userId)
-	        .orElseThrow(() -> new RuntimeException("User not found"));
+	public List<String> getQueuesByLoginId(String loginId) {
+		UserReport loginUser = userReportRepository.findByLoginId(loginId)
+			    .orElseThrow(() -> new RuntimeException("User not found with loginId: " + loginId));
 
-	    return user.getRoles().stream()
-	               .map(Role::getRoleName).collect(Collectors.toList());
+
+	    return loginUser.getRoles().stream()
+	               .map(Role::getRoleName)
+	               .collect(Collectors.toList());
 	}
+
 	
 
 	@Override

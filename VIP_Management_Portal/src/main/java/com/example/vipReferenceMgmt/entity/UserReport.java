@@ -35,12 +35,15 @@ public class UserReport {
     private LocalDateTime lastLoginTime;
     private Boolean userLocked;
     private Integer failureAttemptCount;
+    private String userPassword;
     
     @ManyToMany(fetch = FetchType.LAZY)
 	@JoinTable(
 	    name = "user_role_mapping",
-	    joinColumns = @JoinColumn(name = "login_id"),
+	    joinColumns = @JoinColumn(name = "user_id"),
 	    inverseJoinColumns = @JoinColumn(name = "role_id")
 	)
 	private Set<Role> roles = new HashSet<>();
+
+	
 }

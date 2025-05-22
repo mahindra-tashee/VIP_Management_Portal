@@ -4,6 +4,6 @@ import lombok.Data;
 
 @Data
 public class ReferenceFilterByQueue {
-	  private Long userId;
-	    private String queue;
+	  private String loginId;
+	  private String queue;
 }

@@ -9,8 +9,8 @@ import lombok.Data;
 
 @Data
 public class ReferenceAssignRequest {
-    private Long fromLoginId;
-    private Long toLoginId;
+    private String fromLoginId;
+    private String toLoginId;
     private Long vipReferenceId;
     private Long fromRoleId;
     private Long toRoleId;
@@ -26,6 +26,10 @@ public class ReferenceAssignRequest {
     private String categoryOfSubject;
     private String subCategoryOfSubject;
     private String subject;
+    private String createdBy;
+    private LocalDateTime createdAt;
+    private String updatedBy;
+    private LocalDateTime updatedAt;
     private List<MultipartFile> files;
 
     private List<String> documentTypes;

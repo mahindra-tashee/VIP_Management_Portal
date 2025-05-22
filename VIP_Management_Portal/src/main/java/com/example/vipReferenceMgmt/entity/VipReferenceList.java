@@ -40,6 +40,12 @@ public class VipReferenceList {
     private String categoryOfSubject;
     private String subCategoryOfSubject;
     
+    private String createdBy;
+    private LocalDateTime createdAt;
+    
+    private String updatedBy;
+    private LocalDateTime updatedAt;
+    
     @OneToMany(mappedBy = "vipReference", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<VipReferenceDocument> documents;
    

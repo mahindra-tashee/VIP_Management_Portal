@@ -17,8 +17,10 @@ public interface ReferenceAssignmentService {
 	public List<VipReferenceListResponse> getReferencesOnLoginIdAndStatus(String loginId,ReferenceStatus status);
 	public DashboardStatsResponse getDashboardStats(String loginId);
 	public ResponseEntity<String> assignReference(@ModelAttribute ReferenceAssignRequest reference);
-	public List<String> getQueuesByUserId(Long userId);
+	public List<String> getQueuesByLoginId(String loginId);
 	public List<VipReferenceListResponse> getReferencesByLoginIdAndQueue(String loginId, String queueName);
 	public VipReferenceDetailsResponse getReferenceDetailsById(String referenceNumber);
+	public ResponseEntity<String> updateReference(ReferenceAssignRequest request);
+	
 	
 }

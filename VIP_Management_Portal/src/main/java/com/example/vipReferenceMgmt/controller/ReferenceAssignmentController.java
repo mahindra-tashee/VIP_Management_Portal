@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -32,20 +33,20 @@ public class ReferenceAssignmentController {
 	@Autowired
 	ReferenceAssignmentService referenceAssignmentService;
 
-	@GetMapping("/reference-list/{userId}")
-	public List<VipReferenceListResponse> getVipReferenceList(@PathVariable("userId") String loginId) {
+	@GetMapping("/reference-list/{loginId}")
+	public List<VipReferenceListResponse> getVipReferenceList(@PathVariable("loginId") String loginId) {
 		return referenceAssignmentService.getReferencesOnLoginId(loginId);
 	}
 
-	@GetMapping("/reference-list/{userId}/{status}")
-	public List<VipReferenceListResponse> getReferenceListBasedOnStatus(@PathVariable("userId") Long userId,
+	@GetMapping("/reference-list/{loginId}/{status}")
+	public List<VipReferenceListResponse> getReferenceListBasedOnStatus(@PathVariable("loginId") String loginId,
 			@PathVariable("status") ReferenceStatus status) {
-		return referenceAssignmentService.getReferencesOnUserIdAndStatus(userId, status);
+		return referenceAssignmentService.getReferencesOnLoginIdAndStatus(loginId, status);
 	}
 
-	@GetMapping("/dashboard-stats/{userId}")
-	public DashboardStatsResponse getDashboardData(@PathVariable("userId") Long userId) {
-		return referenceAssignmentService.getDashboardStats(userId);
+	@GetMapping("/dashboard-stats/{loginId}")
+	public DashboardStatsResponse getDashboardData(@PathVariable("loginId") String loginId) {
+		return referenceAssignmentService.getDashboardStats(loginId);
 
 	}
 
@@ -55,11 +56,11 @@ public class ReferenceAssignmentController {
 	}
 
 
-	@GetMapping("/user/{userId}/queues")
-	public ResponseEntity<Map<String, Object>> getUserQueues(@PathVariable("userId") Long userId) {
-		List<String> queues = referenceAssignmentService.getQueuesByUserId(userId);
+	@GetMapping("/user/{loginId}/queues")
+	public ResponseEntity<Map<String, Object>> getUserQueues(@PathVariable("loginId") String loginId) {
+		List<String> queues = referenceAssignmentService.getQueuesByLoginId(loginId);
 		Map<String, Object> response = new HashMap<>();
-		response.put("userId", userId);
+		response.put("userId", loginId);
 		response.put("queues", queues);
 		return ResponseEntity.ok(response);
 	}
@@ -68,7 +69,7 @@ public class ReferenceAssignmentController {
 	public ResponseEntity<List<VipReferenceListResponse>> getFilteredReferences(
 			@RequestBody ReferenceFilterByQueue request) {
 		List<VipReferenceListResponse> responseList = referenceAssignmentService
-				.getReferencesByUserIdAndQueue(request.getUserId(), request.getQueue());
+				.getReferencesByLoginIdAndQueue(request.getLoginId(), request.getQueue());
 		return ResponseEntity.ok(responseList);
 	}
 	
@@ -76,5 +77,10 @@ public class ReferenceAssignmentController {
 	public VipReferenceDetailsResponse getRefernceDetailsOnId(@PathVariable("referenceNo") String referenceNo)
 	{
 		return referenceAssignmentService.getReferenceDetailsById(referenceNo);
+	}
+	
+	@PatchMapping("/updateReference")
+	public ResponseEntity<String> updateReference(@RequestBody ReferenceAssignRequest request){
+		return referenceAssignmentService.updateReference(request);
 	}
 }
