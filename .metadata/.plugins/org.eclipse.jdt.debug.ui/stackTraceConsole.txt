@@ -1,0 +1,4 @@
+UserReport fromLogin = userReportRepository.findByLoginId(request.getFromLoginId()).orElseThrow(() -> new RuntimeException("From User not found with loginId"));
+	    UserReport toLogin = userReportRepository.findByLoginId(request.getToLoginId()).orElseThrow(() -> new RuntimeException("To User not found with loginId"));
+		Role fromRole = roleRepository.findByRoleId(request.getFromRoleId()).orElseThrow(() -> new RuntimeException("Role not found"));
+		Role toRole = roleRepository.findByRoleId(request.getToRoleId()).orElseThrow(() -> new RuntimeException("Role not found"));

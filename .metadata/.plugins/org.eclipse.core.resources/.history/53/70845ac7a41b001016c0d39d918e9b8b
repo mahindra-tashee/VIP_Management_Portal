@@ -1,0 +1,13 @@
+spring.application.name=VIP_Management_Portal
+
+server.port= 4600
+spring.datasource.url=jdbc:postgresql://localhost:5432/VIP_Reference_Management
+spring.datasource.username=root
+spring.datasource.password=root
+spring.jpa.properties.hibernate.default_schema=vip_usermgmt
+spring.datasource.maxActive=500
+# jpa Configuration
+spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.generate-ddl=true
+spring.jpa.show-sql=true
